@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 9
+names: ['Longitudial', 'pothole1', 'transverse','Metal', 'Paper', 'Plastic', 'Random Trash', 'cardboard', 'glass']
+
+roboflow:
+  workspace: sina-jabbari
+  project: project1-eqtmi
+  version: 7
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/sina-jabbari/project1-eqtmi/dataset/7

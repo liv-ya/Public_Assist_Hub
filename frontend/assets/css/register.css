@@ -1,0 +1,35 @@
+.form-container {
+    max-width: 420px;
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 12px;
+    font-size: 16px;
+  }
+  .btn-primary {
+    background: #00ddb8;;
+    border: none;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 8px;
+  }
+  .btn-primary:hover {
+    background: #00ddb8;;
+  }
+  .form-check-label {
+    font-size: 14px;
+  }
+  a {
+    text-decoration: none;
+    color: #00ddb8;;
+  }
+  a:hover {
+    color: #00ddb8;;
+  }
+  
