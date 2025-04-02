@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Public Assist Hub - Homepage</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f4f6f8;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+      }
+      header {
+        background: linear-gradient(135deg, #1d3557, #457b9d);
+        color: #fff;
+        padding: 80px 20px;
+        text-align: center;
+      }
+      header h1 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: bold;
+      }
+      header p {
+        font-size: clamp(1rem, 2.5vw, 1.3rem);
+        margin-top: 15px;
+      }
+      .hero-buttons a {
+        width: 400px;
+        display: inline-block;
+        margin: 10px;
+        padding: 14px 35px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+      }
+      .btn-login {
+        background-color: #f4a261;
+        color: #fff;
+      }
+      /* .btn-login:hover {
+            background-color: #fff;
+            color: #f4a261;
+            border: 1px solid #f4a261;
+        } */
+      .btn-register {
+        background-color: #2a9d8f;
+        color: #fff;
+      }
+      /* .btn-register:hover {
+            background-color: #fff;
+            color: #2a9d8f;
+            border: 1px solid #2a9d8f;
+        } */
+      .features-section {
+        padding: 80px 20px;
+        background-color: #fff;
+        text-align: center;
+      }
+      .features-section h2 {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        margin-bottom: 30px;
+        color: #1d3557;
+      }
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        padding: 0 10px;
+      }
+      .feature-card {
+        background-color: #f8f9fa;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .feature-card h4 {
+        color: #457b9d;
+        margin-bottom: 15px;
+      }
+      .about-section {
+        padding: 80px 20px;
+        background-color: #f0f4f8;
+        text-align: center;
+      }
+      .about-section h2 {
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        color: #1d3557;
+        margin-bottom: 20px;
+      }
+      .about-section p {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: #4b5563;
+        max-width: 800px;
+        margin: 0 auto 40px;
+      }
+      footer {
+        text-align: center;
+        padding: 30px;
+        background-color: #1d3557;
+        color: #fff;
+      }
+      footer a {
+        color: #f4a261;
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 480px) {
+        .hero-buttons a {
+          display: block;
+          width: 80%;
+          margin: 10px auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Public Assist Hub</h1>
+      <p>
+        Your unified platform for smarter civic services and community support.
+      </p>
+      <div class="hero-buttons mt-4">
+        <a href="/admin_login" class="btn-login"
+          >Login (Admin / PWD / Municipality)</a
+        >
+        <a href="/login" class="btn-register">Register a Complaint</a>
+      </div>
+    </header>
+
+    <div class="features-section">
+      <h2>Key Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <h4>Complaint Registration</h4>
+          <p>
+            Simple and fast complaint lodging with real-time tracking and
+            notifications.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h4>Transparent Monitoring</h4>
+          <p>
+            Keep track of complaint status and resolution with clear dashboards.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h4>Municipal Tools</h4>
+          <p>
+            Administrative access for municipal authorities for quick actions
+            and updates.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h4>Community Engagement</h4>
+          <p>
+            Stay connected with community initiatives and participate in public
+            forums.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2>About Public Assist Hub</h2>
+      <p>
+        We are dedicated to bridging the gap between citizens and governance.
+        Our platform ensures smooth complaint registration, fast resolutions,
+        transparent tracking, and proactive community engagement — all designed
+        to make municipal services more accessible and responsive.
+      </p>
+    </div>
+
+    <footer>
+      &copy; 2025 Public Assist Hub | Designed to simplify civic services.
+      <br />
+      <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+    </footer>
+    <script>
+      window.history.pushState(null, "", window.location.href);
+      window.onpopstate = function () {
+        window.history.pushState(null, "", window.location.href);
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Public Issue Reporting</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../static/css/report_issue.css" />
+    <script
+      src="https://maps.gomaps.pro/maps/api/js?key=AlzaSy7Fxt3OIp5QgzbqYTCulUgaIzNJZMUQwyy&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+      .header {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+      }
+      .logout-icon {
+        cursor: pointer;
+        color: #dc3545;
+        font-size: 1.5rem;
+      }
+      .logout-icon:hover {
+        color: #bd2130;
+      }
+      @media (max-width: 576px) {
+        .logout-icon {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <a href="/logout" title="Logout">
+        <i class="fas fa-sign-out-alt logout-icon"></i>
+      </a>
+    </div>
+
+    <div class="main-container">
+      <div class="form-section">
+        <h2 class="text-center">
+          <i class="fas fa-exclamation-circle"></i> Report a Public Issue
+        </h2>
+        <div class="card p-4 mt-3">
+          <form id="issueForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="issueTitle" class="form-label">
+                <i class="fas"></i> Issue Title
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="issueTitle"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="issueDescription" class="form-label">
+                <i class="fas fa-align-left"></i> Description
+              </label>
+              <textarea
+                class="form-control"
+                id="issueDescription"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">
+                <i class="fas fa-image"></i> Upload Image
+              </label>
+              <div
+                class="upload-box"
+                onclick="document.getElementById('issueImage').click()"
+              >
+                <p>
+                  <i
+                    class="fas fa-cloud-upload-alt fa-2x"
+                    style="color: #00c4a5"
+                  ></i>
+                </p>
+                <p>Click to upload an image(jpg,jpeg,png)</p>
+                <input
+                  type="file"
+                  id="issueImage"
+                  accept="image/*"
+                  onchange="previewImage(event)"
+                />
+                <img id="preview" class="upload-preview" />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="issueLocation" class="form-label">
+                <i class="fas fa-map-marker-alt"></i> Location
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="issueLocation"
+                placeholder="Fetching location..."
+                required
+              />
+              <div class="map-section">
+                <div id="map"></div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-paper-plane"></i> Submit Issue
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="track-section">
+        <h3 class="text-center">
+          <i class="fas fa-list"></i> Track & Feedback Reported Issues
+        </h3>
+        <div class="card p-3 mt-3">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="issuesTable">
+              <!-- Issues will be populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script src="../static/js/report_issue.js"></script>
+
+    <!-- Feedback Modal -->
+    <div
+      class="modal fade"
+      id="feedbackModal"
+      tabindex="-1"
+      aria-labelledby="feedbackModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="feedbackModalLabel">Submit Feedback</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="feedbackForm">
+              <div class="mb-3">
+                <label for="comments" class="form-label">Comments</label>
+                <textarea
+                  class="form-control"
+                  id="comments"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Rating</label>
+                <div class="rating">
+                  <span class="star" data-value="5">&#9733;</span>
+                  <span class="star" data-value="4">&#9733;</span>
+                  <span class="star" data-value="3">&#9733;</span>
+                  <span class="star" data-value="2">&#9733;</span>
+                  <span class="star" data-value="1">&#9733;</span>
+                </div>
+                <input type="hidden" id="rating" name="rating" required />
+              </div>
+              <input type="hidden" id="complaintID" name="complaintID" />
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="submitFeedback()"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

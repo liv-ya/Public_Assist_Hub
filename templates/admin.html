@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Public Assist Hub</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+     <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-md-block sidebar bg-dark text-light">
+                <div class="sidebar-sticky p-3 d-flex flex-column justify-content-between" style="height: 100vh;">
+                    <div>
+                        <h4 class="text-center">Public Assist Hub</h4>
+                        <ul class="nav flex-column mt-4">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#dashboard">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#users">User Management</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#issues">Reported Issues</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="text-center mb-5">
+                        <a href="/logout" class="btn btn-danger w-100">Logout</a>
+                    </div>
+                </div>
+            </nav>
+            
+
+            <!-- Main Content -->
+            <main class="col-md-10 tab-content p-4">
+                <!-- Dashboard -->
+                <div id="dashboard" class="tab-pane fade show active">
+                    <h2>Admin Dashboard</h2>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ total_users }}</h5>
+                                    <p class="card-text">Total Users</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ active_issues }}</h5>
+                                    <p class="card-text">Active Issues</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ resolved_issues }}</h5>
+                                    <p class="card-text">Resolved Issues</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Management -->
+                <div id="users" class="tab-pane fade">
+                    <h2>Add Officials</h2>
+                    <div class="card p-3 mb-3">
+                        <h5>Add New User</h5>
+                        <form id="addUserForm" onsubmit="addUser(event)">
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <input type="email" class="form-control" name="email" placeholder="Email" required>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <input type="password" class="form-control" name="password" placeholder="Password" required>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <select class="form-control" name="role" required>
+                                        <option value="Municipality">Municipality</option>
+                                        <option value="Pwd">PWD</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <button type="submit" class="btn btn-primary btn-block">Add</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department ID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- Dynamic Content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Reported Issues -->
+                <div id="issues" class="tab-pane fade">
+                    <h2>Reported Issues</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in complaints %}
+                                <tr>
+                                    <td>{{ complaint.complaintID }}</td>
+                                    <td>{{ complaint.category }}</td>
+                                    <td>{{ complaint.description }}</td>
+                                    <td><span class="badge badge-warning">{{ complaint.status }}</span></td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4">No complaints found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("DOM fully loaded");
+            fetchUsers(); // Fetch users on page load
+            fetchOfficials(); // Fetch officials on page load
+
+            // Add event listener for tab changes
+            document.querySelector('a[data-toggle="tab"][href="#users"]').addEventListener("shown.bs.tab", function () {
+                console.log("User Management tab shown");
+                fetchOfficials(); // Fetch officials when the "User Management" tab is shown
+            });
+        });
+
+        // Initialize Socket.IO connection
+        const socket = io();
+
+        socket.on("connect", () => {
+            console.log("Socket.IO connected");
+            fetchUsers(); // Fetch users after Socket.IO connection is established
+            fetchOfficials(); // Fetch officials after Socket.IO connection is established
+        });
+
+        socket.on("disconnect", () => {
+            console.log("Socket.IO disconnected");
+        });
+
+        // Function to fetch and display users
+        function fetchUsers() {
+            console.log("Fetching users...");
+            fetch('/get-users')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    console.log("Users fetched:", users);
+                    const tbody = document.getElementById('userTableBody');
+                    if (Array.isArray(users) && users.length > 0) {
+                        tbody.innerHTML = users.map(user => `
+                            <tr data-id="${user.id}">
+                                <td>${user.email}</td>
+                                <td>${user.role}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editUser(${user.id})">Edit</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="3" class="text-center">No users found</td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                    document.getElementById('userTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="3" class="text-center text-danger">Error loading users</td>
+                        </tr>
+                    `;
+                });
+        }
+
+        // Handle new user event
+        socket.on('user_added', (user) => {
+            const tbody = document.getElementById('userTableBody');
+            const newRow = `
+                <tr data-id="${user.id}">
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editUser(${user.id})">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+                    </td>
+                </tr>
+            `;
+            
+            if (tbody.innerHTML.includes('No users found')) {
+                tbody.innerHTML = newRow;
+            } else {
+                tbody.insertAdjacentHTML('beforeend', newRow);
+            }
+        });
+
+        // Handle user update event
+        socket.on('user_updated', (user) => {
+            const row = document.querySelector(`tr[data-id="${user.id}"]`);
+            if (row) {
+                row.innerHTML = `
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editUser(${user.id})">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+                    </td>
+                `;
+            }
+        });
+
+        // Handle user deletion event
+        socket.on('user_deleted', (data) => {
+            const row = document.querySelector(`tr[data-id="${data.id}"]`);
+            if (row) {
+                row.remove();
+            }
+            // If table is empty, show "No users found" message
+            const tbody = document.getElementById('userTableBody');
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center">No users found</td>
+                    </tr>
+                `;
+            }
+        });
+
+        // Function to add user
+        function addUser(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                email: formData.get('email'),
+                password: formData.get('password'),
+                role: formData.get('role')
+            };
+
+            fetch('/admin/add-user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    event.target.reset();
+                    fetchOfficials();
+                    window.location.reload();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => alert("Error adding user: " + error.message));
+        }
+
+        // Function to delete user
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                fetch(`/delete-user/${userId}`, {method: 'DELETE'})
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert("Error: " + data.message);
+                        }
+                    });
+            }
+        }
+
+        // Function to edit user
+        function editUser(userId) {
+            const row = document.querySelector(`tr[data-id="${userId}"]`);
+            const email = row.cells[0].textContent;
+            const role = row.cells[1].textContent;
+            
+            // Create edit form
+            row.innerHTML = `
+                <td><input type="email" class="form-control" value="${email}"></td>
+                <td>
+                    <select class="form-control">
+                        <option value="Municipality" ${role === 'Municipality' ? 'selected' : ''}>Municipality</option>
+                        <option value="Pwd" ${role === 'Pwd' ? 'selected' : ''}>PWD</option>
+                    </select>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-success" onclick="saveUser(${userId})">Save</button>
+                    <button class="btn btn-sm btn-secondary" onclick="fetchUsers()">Cancel</button>
+                </td>
+            `;
+        }
+
+        // Function to save edited user
+        function saveUser(userId) {
+            const row = document.querySelector(`tr[data-id="${userId}"]`);
+            const data = {
+                email: row.querySelector('input').value,
+                role: row.querySelector('select').value
+            };
+
+            fetch(`/update-user/${userId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert("Error: " + data.message);
+                }
+            });
+        }
+
+        // Function to fetch and display officials
+        function fetchOfficials() {
+            console.log("Fetching officials...");
+            fetch('/get-officials')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(officials => {
+                    console.log("Officials fetched:", officials);
+                    const tbody = document.getElementById('userTableBody');
+                    if (Array.isArray(officials) && officials.length > 0) {
+                        tbody.innerHTML = officials.map(official => `
+                            <tr data-id="${official.officialID}">
+                                <td>${official.name}</td>
+                                <td>${official.email}</td>
+                                <td>${official.deptID}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteOfficial(${official.officialID})">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center">No officials found</td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching officials:', error);
+                    document.getElementById('userTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">Error loading officials</td>
+                        </tr>
+                    `;
+                });
+        }
+
+        // Function to delete an official
+        function deleteOfficial(officialID) {
+            if (confirm('Are you sure you want to delete this official?')) {
+                fetch(`/delete-official/${officialID}`, {method: 'DELETE'})
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            fetchOfficials(); // Refresh the list
+                        } else {
+                            alert("Error: " + data.message);
+                        }
+                    })
+                    .catch(error => alert("Error deleting official: " + error.message));
+            }
+        }
+
+        // Prevent back button navigation
+        window.history.pushState(null, "", window.location.href);
+        window.onpopstate = function () {
+            window.history.pushState(null, "", window.location.href);
+        };
+    </script>
+</body>
+</html>
