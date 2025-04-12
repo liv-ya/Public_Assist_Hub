@@ -331,14 +331,41 @@ def pwd():
 def resolve_issue(issue_id):
     try:
         with Db() as db:
-            # Update the status of the issue to "Resolved"
+            # Update the status of the issue to "Resolved" and set the resolved_datetime
             query = """
                 UPDATE complaint
-                SET status = 'Resolved'
+                SET status = 'Resolved', resolved_datetime = NOW()
                 WHERE complaintID = %s
             """
             db.execute(query, (issue_id,))
-            app.logger.info(f"Issue {issue_id} resolved successfully")
+            app.logger.info(f"Issue {issue_id} resolved successfully with timestamp.")
+
+            # Fetch the user's email associated with the complaint
+            query = """
+                SELECT u.email
+                FROM complaint c
+                JOIN users u ON c.userID = u.userID
+                WHERE c.complaintID = %s
+            """
+            db.execute(query, (issue_id,))
+            result = db.fetchone()
+            if not result:
+                app.logger.error(f"No user found for complaint {issue_id}")
+                return jsonify({'success': False, 'message': 'User not found'}), 404
+
+            user_email = result['email']
+
+            # Send email to the user
+            try:
+                msg = Message('Complaint Resolved',
+                              sender=app.config['MAIL_USERNAME'],
+                              recipients=[user_email])
+                msg.body = f'Your complaint (ID: {issue_id}) has been resolved. Thank you for using our service!'
+                mail.send(msg)
+                app.logger.info(f"Email sent to {user_email} for resolved complaint {issue_id}")
+            except Exception as e:
+                app.logger.error(f"Error sending email: {str(e)}", exc_info=True)
+                return jsonify({'success': False, 'message': 'Failed to send email'}), 500
         
         return jsonify({'success': True, 'message': 'Issue resolved successfully'})
     except Exception as e:
@@ -371,7 +398,7 @@ def admin():
         with Db() as db:
             # Fetch complaintID, category, description, and status from the complaint table
             db.execute("""
-                SELECT complaintID, category, description, status
+                SELECT complaintID, category, description, status, complaint_datetime, resolved_datetime
                 FROM complaint
             """)
             complaints = db.fetchall()
@@ -635,13 +662,16 @@ def submit_issue():
             dept_id = dept_result['deptID']
             app.logger.info(f"Assigned department: {dept_name} (ID: {dept_id})")
 
-            # Insert into complaint table
+            # Get the current date and time
+            current_datetime = datetime.now()
+
+            # Insert into complaint table with current date and time
             query = """
             INSERT INTO complaint 
-                (title, description, photo, geoLocation, category, userID, assignedDept)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (title, description, photo, geoLocation, category, userID, assignedDept, complaint_datetime)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
-            values = (title, description, filename, location, category, user_id, dept_id)
+            values = (title, description, filename, location, category, user_id, dept_id, current_datetime)
             db.execute(query, values)
 
             # Get the last inserted complaint ID
