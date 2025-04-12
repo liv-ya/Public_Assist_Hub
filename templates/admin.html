@@ -117,6 +117,8 @@
                                 <th>ID</th>
                                 <th>Category</th>
                                 <th>Description</th>
+                                <th>Complaint Date</th>
+                                <th>Resolved Date</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -126,6 +128,8 @@
                                     <td>{{ complaint.complaintID }}</td>
                                     <td>{{ complaint.category }}</td>
                                     <td>{{ complaint.description }}</td>
+                                    <td>{{ complaint.complaint_datetime }}</td>
+                                    <td>{{ complaint.resolved_datetime }}</td>
                                     <td><span class="badge badge-warning">{{ complaint.status }}</span></td>
                                 </tr>
                             {% else %}
